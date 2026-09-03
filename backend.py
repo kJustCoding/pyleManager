@@ -4,6 +4,8 @@ homePath=os.path.expanduser("~")
 
 def getSubDirs(dir=homePath, showHiddenFiles=False):
 
+    dir=os.path.expanduser(dir)
+
     filesUnfiltered=os.listdir(dir)
 
     filesFiltered=[]
@@ -21,4 +23,4 @@ def getSubDirs(dir=homePath, showHiddenFiles=False):
     return filesFiltered
 
 
-getSubDirs()
+
