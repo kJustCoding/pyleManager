@@ -2,7 +2,6 @@ import customtkinter as ctk
 from PIL import Image
 import backend
 from pathlib import Path
-import getFileInfo
 
 
 SCRIPT_DIR= Path(__file__).parent
@@ -80,7 +79,7 @@ def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, b
 
         fileLabel._text_label.configure(wraplength=buttonLength)
 
-        fileType= (getFileInfo.getFileInfo(absPath))[0]
+        fileType= (backend.getFileInfo(absPath))[0]
 
         match fileType:
             case '':
@@ -102,9 +101,21 @@ def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, b
 
 
 def displayBackwardsDirectory():
-    global backwardDirCache
+    global backwardDirCache, forwardDirCache
 
-    displayNewDirectory(backwardDirCache[-2], isGoingBackward=True)
+    try:
+        forwardDirCache.append(backwardDirCache[-2])
+        displayNewDirectory(backwardDirCache[-2], isGoingBackward=True)
+    
+    except:
+        currentPath=backwardDirCache[-1]
+        displayNewDirectory(parentDir:= backend.getParentDirectory(currentPath), isGoingBackward=True)
+        backwardDirCache.append(parentDir)
+        
+
+
+        
+
 
     print(backwardDirCache)
 

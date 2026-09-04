@@ -1,4 +1,5 @@
 import os
+import mimetypes
 
 homePath=os.path.expanduser("~")
 
@@ -22,5 +23,27 @@ def getSubDirs(dir=homePath, showHiddenFiles=False):
 
     return filesFiltered
 
+
+def getFileInfo(absPath):
+
+    mimeType, encoding= mimetypes.guess_type(absPath)
+
+    try:
+        fileType, fileExtension =mimeType.split("/")
+    except:
+        fileType, fileExtension = "",""
+
+    
+    return [fileType, fileExtension]
+
+def getAbsPath(path):
+
+    return os.path.expanduser(path)
+
+
+def getParentDirectory(currentPath):
+    currentAbsPath=getAbsPath(currentPath)
+    
+    return os.path.dirname(currentAbsPath)
 
 
