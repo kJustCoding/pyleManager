@@ -6,7 +6,7 @@ import getFileInfo
 
 
 SCRIPT_DIR= Path(__file__).parent
-
+cachedDirs= []
 
 
 root= ctk.CTk()
@@ -30,9 +30,17 @@ textFileIconForButton=ctk.CTkImage(light_image=textFileIcon,dark_image=textFileI
 imageIcon=Image.open(SCRIPT_DIR / "assets" / "image.ico" )
 imageIconForButton=ctk.CTkImage(light_image=imageIcon,dark_image=imageIcon,size=(96,96))
 
+applicationIcon=Image.open(SCRIPT_DIR / "assets" / "application.ico" )
+applicationIconForButton=ctk.CTkImage(light_image=applicationIcon,dark_image=applicationIcon,size=(84,84))
 
 
-def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False):
+
+def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, buttonLength=140, isGoingBackward=False):
+
+    global cachedDirs
+
+
+    if not isGoingBackward: cachedDirs.append(parentDir)
 
     if len(filesWindow.winfo_children()) > 0:
 
@@ -49,19 +57,23 @@ def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False):
         absPath=parentDir + "/" + cItem
 
         fileLabel=ctk.CTkButton(filesWindow,
-            width=140, height=140, font=("Helvetica",10,"bold"), corner_radius=10, text=cItem,
+            width=buttonLength, height=buttonLength, font=("Adwaita Sans",13,"bold"), corner_radius=10, text=cItem,
             anchor="s", fg_color="transparent", compound="top",
             command= lambda cFolder=cItem: displayNewDirectory(parentDir + "/" + cFolder))
+
+        fileLabel._text_label.configure(wraplength=buttonLength)
 
         fileType= (getFileInfo.getFileInfo(absPath))[0]
 
         match fileType:
             case '':
                 fileLabel.configure(image=folderIconForButton)
-            case 'text':
-                fileLabel.configure(image=textFileIconForButton)
             case 'image':
                 fileLabel.configure(image=imageIconForButton)
+            case 'application':
+                fileLabel.configure(image=applicationIconForButton)
+            case _:
+                fileLabel.configure(image=textFileIconForButton)
             
         columnNumber=((i-1)%columnAmm)
         fileLabel.grid(column=columnNumber,row=cRow, pady=5, padx=5)
@@ -69,13 +81,35 @@ def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False):
         if i%columnAmm ==0:
             cRow+=1
 
-displayNewDirectory("~",showHiddenFiles=True)
+
+def displayBackwardsDirectory():
+    global cachedDirs
+
+    displayNewDirectory(cachedDirs[-2], isGoingBackward=True)
+
+    print(cachedDirs)
+
+    try: cachedDirs.remove(cachedDirs[-1])
+    except: pass
+
+    #try: cachedDirs.remove(cachedDirs[-1])
+    #except: pass
+
+    print(cachedDirs)
+
+    
+
+displayNewDirectory("~")
 
 
 
 
 
-filesWindow.grid(row=0,column=0,sticky="nsew")
+goBackwardsBtn= ctk.CTkButton(root, width=100, height=50, fg_color='transparent', text="<-",
+                command=lambda: displayBackwardsDirectory())
+
+goBackwardsBtn.grid(row=0,sticky="sw")
+filesWindow.grid(row=1,column=0,sticky="nsew")
 
 
 root.mainloop()
