@@ -1,4 +1,5 @@
 import os
+import datetime
 import mimetypes
 
 homePath=os.path.expanduser("~")
@@ -33,8 +34,10 @@ def getFileInfo(absPath):
     except:
         fileType, fileExtension = "",""
 
+    fileMetadata=os.stat(absPath)
+
     
-    return [fileType, fileExtension]
+    return [fileType, fileExtension, fileMetadata]
 
 def getAbsPath(path):
 
@@ -45,5 +48,19 @@ def getParentDirectory(currentPath):
     currentAbsPath=getAbsPath(currentPath)
     
     return os.path.dirname(currentAbsPath)
+
+def timestampToDateTime(timestamp):
+
+    datetime.datetime.fromtimestamp(timestamp)
+
+    return timestamp
+
+def doesPathExist(path):
+    if os.path.exists(path): return True
+    else:return False
+
+    
+
+
 
 

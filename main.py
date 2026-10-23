@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 SCRIPT_DIR= Path(__file__).parent
-backwardDirCache= []
 forwardDirCache= []
+currentDir=''
 
 uniFont="Adwaita Sans"
 
@@ -23,7 +23,9 @@ filesWindow=ctk.CTkScrollableFrame(root, width= 950, height=500)
 
 
 topBarFrame= ctk.CTkFrame(root, width=500, height=50,corner_radius=10)
-currentDirLabel= ctk.CTkLabel(topBarFrame, width=200, height=50,corner_radius=10,fg_color='transparent',font=(uniFont,15,"bold"))
+currentDirEntry= ctk.CTkEntry(topBarFrame,width=500, height=50,corner_radius=10,fg_color='transparent',font=(uniFont,15,"bold"))
+currentDirEntryConfirm=ctk.CTkButton(topBarFrame,width=75,height=50,corner_radius=10,text="Confirm",fg_color='transparent',font=(uniFont,15,"bold"))
+
 
 
 
@@ -49,15 +51,10 @@ forwardArrowIcon=Image.open(SCRIPT_DIR / "assets" / "forwardArrow.png" )
 forwardArrowIconForButton=ctk.CTkImage(light_image=forwardArrowIcon,dark_image=forwardArrowIcon,size=(32,32))
 
 
+def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, buttonLength=140):
+    global currentDir
 
-
-def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, buttonLength=140, isGoingBackward=False):
-
-    global backwardDirCache
-
-
-    if not isGoingBackward: backwardDirCache.append(parentDir)
-
+    
     if len(filesWindow.winfo_children()) > 0:
 
         for fileEntry in filesWindow.winfo_children():
@@ -70,7 +67,7 @@ def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, b
         i=j+1
         cItem= dirList[i-1]
 
-        absPath=parentDir + "/" + cItem
+        absPath=backend.getAbsPath(parentDir + "/" + cItem)
 
         fileLabel=ctk.CTkButton(filesWindow,
             width=buttonLength, height=buttonLength, font=(uniFont,13,"bold"), corner_radius=10, text=cItem,
@@ -94,44 +91,50 @@ def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, b
         columnNumber=((i-1)%columnAmm)
         fileLabel.grid(column=columnNumber,row=cRow, pady=5, padx=5)
 
-        currentDirLabel.configure(text=parentDir)
         
+        currentDir=parentDir
+
         if i%columnAmm ==0:
             cRow+=1
+    
+    currentDirEntry.delete(0,"end")
+    currentDirEntry.insert(0,parentDir)
 
+lambdaDisplayDir= lambda p: displayNewDirectory(p)
 
 def displayBackwardsDirectory():
-    global backwardDirCache, forwardDirCache
+    global forwardsDirCache, currentDir
 
-    try:
-        forwardDirCache.append(backwardDirCache[-2])
-        displayNewDirectory(backwardDirCache[-2], isGoingBackward=True)
-    
-    except:
-        currentPath=backwardDirCache[-1]
-        displayNewDirectory(parentDir:= backend.getParentDirectory(currentPath), isGoingBackward=True)
-        backwardDirCache.append(parentDir)
+    forwardDirCache.append(currentDir)
+
+    newDir=backend.getParentDirectory(currentDir)
+    displayNewDirectory(newDir)
+
+def displayForwardsDirectory():
+    global forwardDirCache
+
+    displayNewDirectory(forwardDirCache[-1])
+
+    forwardDirCache.pop()
         
+def currentDirEntryConfirmFunc():
+    path=currentDirEntry.get()
+    absPath=backend.getAbsPath(path)
+
+    if backend.doesPathExist(absPath)==True:
+        displayNewDirectory(path)
+
+        currentDirEntry.configure(text_color="white")
+
+    else:
+        currentDirEntry.configure(text_color="red")
 
 
-        
+currentDirEntryConfirm.configure(command=currentDirEntryConfirmFunc)
 
 
-    print(backwardDirCache)
-
-    try: backwardDirCache.remove(backwardDirCache[-1])
-    except: pass
-
-    #try: backwardDirCache.remove(backwardDirCache[-1])
-    #except: pass
-
-    print(backwardDirCache)
-
-    
-
-displayNewDirectory("~")
-
-
+#displayNewDirectory(backend.getAbsPath("~"))
+lambdaDisplayDir(backend.getAbsPath("/usr/bin"))
 
 
 
@@ -139,13 +142,14 @@ goBackwardsBtn= ctk.CTkButton(topBarFrame, width=80, height=50,corner_radius=10,
                 command=lambda: displayBackwardsDirectory())
 
 goForwardsBtn= ctk.CTkButton(topBarFrame, width=80, height=50,corner_radius=10, fg_color='transparent',text='', image=forwardArrowIconForButton,
-                command=lambda: displayBackwardsDirectory())
+                command=lambda: displayForwardsDirectory())
 
 
 
 goBackwardsBtn.grid(column=0,row=0,sticky="sw")
 goForwardsBtn.grid(column=1,row=0,sticky="sw")
-currentDirLabel.grid(column=3,row=0,sticky="sw")
+currentDirEntry.grid(column=3,row=0,sticky="sw")
+currentDirEntryConfirm.grid(column=4,row=0,sticky="sw")
 
 
 topBarFrame.grid(sticky="sw",row=0,column=0)
