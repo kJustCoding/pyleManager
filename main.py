@@ -133,8 +133,8 @@ def currentDirEntryConfirmFunc():
 currentDirEntryConfirm.configure(command=currentDirEntryConfirmFunc)
 
 
-#displayNewDirectory(backend.getAbsPath("~"))
-lambdaDisplayDir(backend.getAbsPath("/usr/bin"))
+displayNewDirectory(backend.getAbsPath("~"))
+#lambdaDisplayDir(backend.getAbsPath("/usr/bin"))
 
 
 
