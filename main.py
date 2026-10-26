@@ -8,11 +8,21 @@ SCRIPT_DIR= Path(__file__).parent
 forwardDirCache= []
 currentDir=''
 
+defaultButtonLength=140
+
 uniFont="Adwaita Sans"
 
+xScaling=1
+yScaling=1
+defColumnAmm=6
+
+
+defaultWindowWidth=1000
+
+defaultWindowHeight=600
 
 root= ctk.CTk()
-root.geometry("1000x600")
+root.geometry(f"{defaultWindowWidth}x{defaultWindowHeight}")
 root.title("Pyle Manager")
 
 root.grid_rowconfigure(0, weight=1)
@@ -51,7 +61,7 @@ forwardArrowIcon=Image.open(SCRIPT_DIR / "assets" / "forwardArrow.png" )
 forwardArrowIconForButton=ctk.CTkImage(light_image=forwardArrowIcon,dark_image=forwardArrowIcon,size=(32,32))
 
 
-def displayNewDirectory(parentDir, cRow=0, columnAmm=6, showHiddenFiles=False, buttonLength=140):
+def displayNewDirectory(parentDir, cRow=0, columnAmm=defColumnAmm, showHiddenFiles=False, buttonLength=defaultButtonLength):
     global currentDir
 
     
@@ -129,13 +139,31 @@ def currentDirEntryConfirmFunc():
     else:
         currentDirEntry.configure(text_color="red")
 
+def changeScaling(event=None):
+    global defaultWindowWidth, currentDir,defColumnAmm
+
+    xScale= (root.winfo_width()/defaultWindowWidth)
+    yScale= (root.winfo_height()/defaultWindowWidth)
+
+    columnAmm = int(defColumnAmm * xScale)
+
+    print(f"columns {columnAmm}")
+
+
+
+    
+
+    displayNewDirectory(currentDir,columnAmm=max(1,columnAmm))
+
 
 currentDirEntryConfirm.configure(command=currentDirEntryConfirmFunc)
 
 
-#displayNewDirectory(backend.getAbsPath("~"))
-lambdaDisplayDir(backend.getAbsPath("/usr/bin"))
 
+
+displayNewDirectory(backend.getAbsPath("~"))
+
+root.bind("<Configure>",changeScaling)
 
 
 goBackwardsBtn= ctk.CTkButton(topBarFrame, width=80, height=50,corner_radius=10, fg_color='transparent',text='', image=backArrowIconForButton,
